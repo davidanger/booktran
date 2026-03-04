@@ -1,0 +1,67 @@
+# booktran 配置文件模板
+# 复制此文件为 config.yaml 并填写你的实际配置
+# cp config.yaml.template config.yaml
+
+# ========== 翻译模型配置 ==========
+translation:
+  # API Base URL (兼容 OpenAI 格式)
+  # 示例：https://api.openai.com/v1
+  # 示例：https://api.example.com/v1
+  base_url: "https://your-api-base-url.com/v1"
+  
+  # API Key (请替换为你的实际 API Key)
+  api_key: "sk-your-api-key-here"
+  
+  # 模型名称
+  # ⚠️ 必须使用支持视觉的多模态模型（用于处理图片、封面等）
+  # 示例：gpt-4o (OpenAI), qwen-vl-plus (阿里云), qwen2.5-vl (通义千问)
+  # 示例：claude-3-sonnet (Anthropic), gemini-pro-vision (Google)
+  model: "your-multimodal-model-name"
+  
+  # 超时时间 (秒)
+  timeout: 120
+  
+  # 最大重试次数
+  max_retries: 3
+  
+  # 最大输出 tokens
+  max_tokens: 4096
+  
+  # 关闭思考模式 (Qwen reasoning 模型专用)
+  # 如果使用的模型不支持此参数，请删除整个 chat_template_kwargs 部分
+  chat_template_kwargs:
+    enable_thinking: false
+  
+  # 采样参数 (llama.cpp 风格)
+  # 如果使用的 API 不支持这些参数，请删除
+  temperature: 0.7
+  top_p: 0.8
+  top_k: 20
+  min_p: 0.00
+
+# ========== 工作流配置 ==========
+workflow:
+  # 目标语言
+  target_lang: "zh"
+  
+  # 源语言
+  source_lang: "en"
+  
+  # 切片大小 (字符数)
+  # 建议范围：1500-3000
+  chunk_size: 2000
+  
+  # 切片重叠 (字符数)
+  # v2.0+ 强制为 0，不做重叠，按完整句子边界切割
+  chunk_overlap: 0
+  
+  # 自动重试
+  auto_retry: true
+
+# ========== 输出配置 ==========
+output:
+  # 保存中间文件
+  save_intermediate: true
+  
+  # 输出目录 (绝对路径或相对路径)
+  output_dir: "./output"

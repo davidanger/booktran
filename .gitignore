@@ -1,0 +1,103 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Configuration (sensitive)
+config.yaml
+
+# Archive directory (development files)
+_archive/
+
+# Output files
+output/
+output_test/
+quick_test/
+test_*/
+*_output/
+
+# Logs
+*.log
+logs/
+
+# Development reports (temporary)
+*REPORT*.md
+*report*.md
+
+# Translation state
+.translation_pid
+state_*.json
+summary.md
+chunks_translated/
+chunks_info.json
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Test files
+test_check/
+test_check2/
+test_cover/
+test_cover_epub/
+test_debug/
+test_epub_build*/
+test_final/
+test_full_meta/
+test_isbn/
+test_manual/
+test_meta_check/
+test_meta_fix/
+test_metadata/
+test_output*/
+test_parse*/
+test_structure_output/
+
+# Debug files
+*.debug
+debug_*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Input files (user's books)
+input/*.epub
+input/*.pdf
+input/*.mobi
+input/*.azw3
+input/*.fb2
+input/*.txt
+input/*.docx
+input/*.html
