@@ -70,6 +70,7 @@ scripts/test_*.py
 scripts/test_*.sh
 scripts/manual_*.py
 scripts/manual_*.sh
+scripts/demo_*.py
 fix_epub_*.py
 
 # Translation state
