@@ -54,6 +54,13 @@ logs/
 *REPORT*.md
 *report*.md
 
+# Development logs and summaries
+DEVELOPMENT_LOG.md
+*LOG*.md
+*log*.md
+CODE_UPDATE_SUMMARY.md
+OPTIMIZATION_*.md
+
 # Translation state
 .translation_pid
 state_*.json
