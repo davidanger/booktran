@@ -61,6 +61,17 @@ DEVELOPMENT_LOG.md
 CODE_UPDATE_SUMMARY.md
 OPTIMIZATION_*.md
 
+# Test scripts
+test_*.py
+*/test_*.py
+
+# Development scripts (not for production)
+scripts/test_*.py
+scripts/test_*.sh
+scripts/manual_*.py
+scripts/manual_*.sh
+fix_epub_*.py
+
 # Translation state
 .translation_pid
 state_*.json
