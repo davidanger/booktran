@@ -1,5 +1,11 @@
 """
 翻译模块 - 调用外部 LLM API 进行翻译
+
+修复的问题:
+- API 空响应 (Qwen 模型需要 enable_thinking=false)
+- 翻译重复/循环 (增强防重复提示词)
+- 术语不一致 (内联格式 中文 (English))
+- 标题风格混乱 (增加风格参考)
 """
 
 import httpx
@@ -35,6 +41,7 @@ class Translator:
         self.top_p = self.config.get('top_p', 0.8)
         self.top_k = self.config.get('top_k', 20)
         self.min_p = self.config.get('min_p', 0.0)
+        # v2.3 修复：Qwen 模型需要 enable_thinking=false
         self.chat_template_kwargs = self.config.get('chat_template_kwargs', {})
         logger.info(f"   Base URL: {self.base_url}")
         logger.info(f"   API URL: {self.api_url}")
@@ -77,6 +84,9 @@ class Translator:
         # 调用 API
         translated_text = await self._call_llm_api(prompt)
         
+        # 后处理：确保内联术语格式正确（可选）
+        # translated_text = self._postprocess_inline_terms(translated_text)
+        
         # 创建翻译后的切片
         translated_chunk = Chunk(
             id=chunk.id,
@@ -102,27 +112,52 @@ class Translator:
         summary: str,
         prev_translation_ending: str
     ) -> str:
-        """构建翻译 Prompt - 防重复增强版"""
-        return f"""# 背景摘要（仅供参考，不要翻译）
+        """构建翻译 Prompt - 双层摘要 + 内联术语 + 标题风格版"""
+        return f"""# 上下文参考（仅供参考，不要翻译）
 {summary if summary else "无"}
 
-# 上一片译文末尾（仅供参考，用于上下文衔接，不要重复翻译）
+# 上一片译文末尾（仅供参考，用于上下文衔接，不要重复）
 {prev_translation_ending if prev_translation_ending else "无"}
 
 # 当前片原文（请只翻译这部分内容）
 {chunk_text}
 
 # 翻译要求
-- **只翻译"当前片原文"部分**，不要翻译背景摘要和上一片译文末尾
-- **第一句翻译时参考上一片译文末尾**，确保上下文衔接自然流畅
-- **但绝对不要重复翻译上一片译文末尾的内容**，只翻译当前片的新内容
-- 如果当前片原文开头与背景摘要或上一片译文重复，**直接跳过重复部分，从新内容开始翻译**
-- 格式：从左到右，从上到下
-- 术语：参考背景摘要中的术语，保持一致
-- 风格：准确、流畅、符合中文表达习惯
-- 直接输出翻译结果，不要输出思考过程、解释或额外说明
 
-# 请翻译以上"当前片原文"为中文（记住：不要重复翻译上一片的内容）："""
+## 核心要求
+1. **只翻译"当前片原文"部分**，不要翻译上下文参考和上一片译文
+2. **第一句参考上一片译文末尾**，确保衔接自然，但**绝对不要重复**
+3. **如果原文开头与上下文重复，直接跳过，从新内容开始翻译**
+
+## 章节标题翻译（重要）
+如果当前片包含章节标题，请参考"翻译风格指南"中的格式：
+- 保持统一的标题格式（如"第 X 章：标题"）
+- 参考已翻译的标题示例
+- 确保目录和正文标题一致
+
+## 术语处理（重要）
+人名、地名、书名、作品名、特殊名词采用**中英文对照**格式：
+- 人名：`约翰 (John)`
+- 地名：`剑桥大学 (Cambridge University)`
+- 书名/作品名：`《婚姻史》(A History of Marriage)`
+- 特殊名词：`一夫一妻制 (monogamy)`
+
+## 文风要求
+- 参考上下文摘要中的翻译风格（正式/口语化、句式偏好等）
+- 保持情节/论点连贯，不要前后矛盾
+- 准确、流畅、符合中文表达习惯
+
+## 格式要求
+- 从左到右，从上到下
+- 保留原文段落结构
+- 保留 Markdown 格式（标题、加粗、列表等）
+- 对话使用中文引号""
+
+## 输出要求
+- 直接输出翻译结果
+- **不要输出思考过程、解释或额外说明**
+
+# 请翻译以上"当前片原文"为中文（记住：不要重复上一片的内容）："""
     
     async def _call_llm_api(self, prompt: str) -> str:
         """调用 LLM API（带重试机制）"""

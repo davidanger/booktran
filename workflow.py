@@ -12,7 +12,7 @@ from typing import Optional, Callable
 from modules.parser import parse_document
 from modules.chunker import Chunker, ChunkMerger
 from modules.translator import Translator
-from modules.summary import SummaryManager
+from modules.summary_v2 import SummaryManager
 from modules.state_manager import StateManager
 from modules.epub_manual import build_epub_manual
 
@@ -138,7 +138,14 @@ class TranslationWorkflow:
                 
                 # 翻译章节标题
                 if chunk.has_chapter_title and chunk.chapter_id not in chapter_titles_translated:
-                    title_prompt = f"请将以下章节标题翻译成中文：\n{chunk.chapter_title}\n\n直接输出翻译结果："
+                    # 构建标题翻译提示词（参考已有风格）
+                    style_hint = ""
+                    if chapter_titles_translated:
+                        # 已有翻译的标题，提取格式参考
+                        examples = list(chapter_titles_translated.values())[:3]
+                        style_hint = f"\n\n参考已翻译标题格式（保持风格一致）:\n" + "\n".join([f"- {e}" for e in examples])
+                    
+                    title_prompt = f"请将以下章节标题翻译成中文：\n{chunk.chapter_title}{style_hint}\n\n直接输出翻译结果，保持格式统一："
                     try:
                         title_translated = await self.translator._call_llm_api(title_prompt)
                         chapter_titles_translated[chunk.chapter_id] = title_translated.strip()
@@ -160,11 +167,17 @@ class TranslationWorkflow:
                     translated.chapter_title_translated = chapter_titles_translated[chunk.chapter_id]
                 
                 translated_chunks.append(translated)
-                await self.summary_mgr.update(i, chunk.text, translated.text)
+                await self.summary_mgr.update(
+                    chunk_id=chunk.id,
+                    chapter_id=chunk.chapter_id,
+                    original_text=chunk.text,
+                    translated_text=translated.text,
+                    chapter_title=chunk.chapter_title
+                )
                 await self.state_mgr.save(i + 1, len(chunks), "running")
                 
                 # 保存切片
-                chunk_file = self.output_dir / "chunks" / f"chunk_{i+1:03d}.md"
+                chunk_file = self.output_dir / "chunks" / f"chunk_{chunk.id:03d}.md"
                 chunk_file.parent.mkdir(parents=True, exist_ok=True)
                 chunk_file.write_text(translated.text, encoding='utf-8')
                 
